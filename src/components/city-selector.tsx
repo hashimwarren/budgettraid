@@ -89,7 +89,7 @@ export function CitySelector() {
       <CardHeader>
         <CardTitle>Choose Your City</CardTitle>
         <CardDescription>
-          Select a city to see today's kids eat free deals
+          Select a city to see today&apos;s kids eat free deals
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

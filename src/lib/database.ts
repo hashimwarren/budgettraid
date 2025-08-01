@@ -9,15 +9,10 @@ import {
   citiesTable,
   restaurantsTable,
   dealsTable,
-  cuisinesTable,
-  restaurantCuisinesTable,
   tipsTable,
-  flagsTable,
-  type Restaurant,
-  type Deal,
-  type City
+  flagsTable
 } from '../db/schema';
-import { eq, and, asc, desc } from 'drizzle-orm';
+import { eq, and, asc } from 'drizzle-orm';
 
 // Get all cities
 export async function getCities() {
