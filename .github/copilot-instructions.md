@@ -1,5 +1,24 @@
 # BudgetTriad.com/KidsEatFree — V1 Specification (Locked)
 
+## ✅ IMPLEMENTATION STATUS
+
+### **COMPLETED (get-started branch)**
+- ✅ **Database Schema & Connection** - Full Neon PostgreSQL setup with Drizzle ORM
+- ✅ **Cities API** - `/api/cities` endpoint returning all launch cities
+- ✅ **CitySelector Component** - Complete with tests, localStorage persistence, error handling
+- ✅ **Budget Triad Homepage** - Main landing page with service cards layout
+- ✅ **Kids Eat Free Section** - Dedicated route at `/kidseatfree` with city selection
+- ✅ **Test Coverage** - 13/13 tests passing (components + pages)
+- ✅ **TDD Approach** - Implemented following test-driven development
+
+### **REMAINING WORK**
+- 🔄 **Today's Deals Display** - Show deals for selected city/day
+- 🔄 **Day Selection** - Filter by day of week  
+- 🔄 **Deals List** - Mobile-first list with restaurant info
+- 🔄 **Restaurant Detail Pages** - Lightweight detail view
+- 🔄 **Tips & Flags** - Anonymous reporting system
+- 🔄 **Distance & Sorting** - Location-based features
+
 ## 1) Goals & Scope
 - **Goal:** On a phone, show **today’s** kids‑eat‑free deals for a chosen **City** fast; let users switch **Day/City**, optionally see **distance & nearest sort** (no map), submit **tips**, and make **anonymous one‑tap flags** at the **restaurant level**.
 - **Launch cities:** Greensboro, High Point, Winston‑Salem, Kernersville, **Asheboro (NC Zoo)**.
@@ -21,19 +40,30 @@
 [List of Gherkin-style criteria from the full PRD]
 
 ## 5) Visual Flows (Mermaid)
-### Home flow
+### Current Implementation Flow
 ```mermaid
 flowchart LR
-  A[Open KidsEatFree] --> B{Last city saved?}
-  B -- Yes --> C[Show List: Today + Last City]
-  B -- No --> D[Pick City]
-  D --> C
-  C --> E{Change filters?}
-  E -- City/Day --> C
-  E -- Cuisine chip --> C
-  E -- Add distance --> F[Share location / Enter ZIP]
-  F --> G[Show distance + Sort: Nearest]
-  G --> C
+  A[Open BudgetTriad.com] --> B[Budget Triad Homepage]
+  B --> C[Click Kids Eat Free Card]
+  C --> D[/kidseatfree page]
+  D --> E{Last city saved?}
+  E -- Yes --> F[Show CitySelector with saved city]
+  E -- No --> G[Show CitySelector dropdown]
+  F --> H[User can change city]
+  G --> H
+  H --> I[Ready for deals display - NEXT FEATURE]
+```
+
+### Planned Deals Flow (Next Sprint)
+```mermaid
+flowchart LR
+  A[City Selected] --> B[Show Today's Deals List]
+  B --> C{Change filters?}
+  C -- City/Day --> B
+  C -- Cuisine chip --> B
+  C -- Add distance --> D[Share location / Enter ZIP]
+  D --> E[Show distance + Sort: Nearest]
+  E --> B
 ```
 
 ### Tip/Flag sequence
