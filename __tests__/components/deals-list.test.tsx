@@ -34,14 +34,9 @@ describe('DealsList', () => {
     expect(screen.getByText(/no kids eat free deals available for monday in greensboro/i)).toBeInTheDocument();
   });
 
-  it('displays deals when API returns data', async () => {
-    const mockDeals = [
+  it('displays consolidated deals when API returns data', async () => {
+    const mockConsolidatedDeals = [
       {
-        id: 1,
-        dayOfWeek: 'Sunday',
-        ruleText: 'Kids eat free with adult entrée purchase',
-        verified: true,
-        verifiedAt: '2024-01-01T00:00:00Z',
         restaurant: {
           id: 1,
           name: 'Chuck E. Cheese',
@@ -61,12 +56,21 @@ describe('DealsList', () => {
             slug: 'fast-food',
           },
         ],
+        deals: [
+          {
+            id: 1,
+            dayOfWeek: 'Sunday',
+            ruleText: 'Kids eat free with adult entrée purchase',
+            verified: true,
+            verifiedAt: '2024-01-01T00:00:00Z',
+          },
+        ],
       },
     ];
 
     (fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
-      json: async () => mockDeals,
+      json: async () => mockConsolidatedDeals,
     });
 
     render(<DealsList city="greensboro" day="Sunday" />);
@@ -78,7 +82,85 @@ describe('DealsList', () => {
     expect(screen.getByText('Kids eat free with adult entrée purchase')).toBeInTheDocument();
     expect(screen.getByText('Fast Food')).toBeInTheDocument();
     expect(screen.getByText('Verified')).toBeInTheDocument();
-    expect(screen.getByText('1 deal for Sunday in Greensboro')).toBeInTheDocument();
+    expect(screen.getByText('1 restaurant for Sunday in Greensboro')).toBeInTheDocument();
+  });
+
+  it('displays multiple days for the same restaurant', async () => {
+    const mockConsolidatedDeals = [
+      {
+        restaurant: {
+          id: 1,
+          name: 'Buffalo Wild Wings',
+          websiteUrl: 'https://www.buffalowildwings.com',
+          lat: 36.0726,
+          lng: -79.7920,
+        },
+        city: {
+          id: 1,
+          name: 'Greensboro',
+          slug: 'greensboro',
+        },
+        cuisines: [
+          {
+            id: 1,
+            name: 'American',
+            slug: 'american',
+          },
+          {
+            id: 2,
+            name: 'Wings',
+            slug: 'wings',
+          },
+        ],
+        deals: [
+          {
+            id: 1,
+            dayOfWeek: 'Sunday',
+            ruleText: 'Kids meals are 50% off when accompanied by a paying adult',
+            verified: false,
+            verifiedAt: null,
+          },
+          {
+            id: 2,
+            dayOfWeek: 'Monday',
+            ruleText: 'Kids meals are 50% off when accompanied by a paying adult',
+            verified: false,
+            verifiedAt: null,
+          },
+          {
+            id: 3,
+            dayOfWeek: 'Wednesday',
+            ruleText: 'Kids meals are 50% off when accompanied by a paying adult',
+            verified: false,
+            verifiedAt: null,
+          },
+        ],
+      },
+    ];
+
+    (fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockConsolidatedDeals,
+    });
+
+    render(<DealsList />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Buffalo Wild Wings')).toBeInTheDocument();
+    });
+
+    // Should show all three day badges
+    expect(screen.getByText('Sunday')).toBeInTheDocument();
+    expect(screen.getByText('Monday')).toBeInTheDocument();
+    expect(screen.getByText('Wednesday')).toBeInTheDocument();
+    
+    // Should show the deal rule once since they're all the same
+    expect(screen.getByText('Kids meals are 50% off when accompanied by a paying adult')).toBeInTheDocument();
+    
+    // Should not show verified badge since none of the deals are verified
+    expect(screen.queryByText('Verified')).not.toBeInTheDocument();
+    
+    expect(screen.getByText('1 restaurant available')).toBeInTheDocument();
   });
 
   it('shows error state when API fails', async () => {

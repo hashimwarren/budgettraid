@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db';
 import { dealsTable, restaurantsTable, citiesTable, cuisinesTable, restaurantCuisinesTable } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { ConsolidatedDeal } from '@/types/deals';
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,9 +47,14 @@ export async function GET(request: NextRequest) {
       .innerJoin(citiesTable, eq(restaurantsTable.cityId, citiesTable.id))
       .where(and(...conditions));
 
-    // Get cuisines for each restaurant
-    const dealsWithCuisines = await Promise.all(
-      deals.map(async (deal) => {
+    // Group deals by restaurant
+    const restaurantMap = new Map<number, ConsolidatedDeal>();
+
+    for (const deal of deals) {
+      const restaurantId = deal.restaurant.id;
+      
+      if (!restaurantMap.has(restaurantId)) {
+        // Get cuisines for this restaurant
         const cuisines = await db
           .select({
             id: cuisinesTable.id,
@@ -57,16 +63,32 @@ export async function GET(request: NextRequest) {
           })
           .from(cuisinesTable)
           .innerJoin(restaurantCuisinesTable, eq(cuisinesTable.id, restaurantCuisinesTable.cuisineId))
-          .where(eq(restaurantCuisinesTable.restaurantId, deal.restaurant.id));
+          .where(eq(restaurantCuisinesTable.restaurantId, restaurantId));
 
-        return {
-          ...deal,
+        // Create new consolidated deal entry
+        restaurantMap.set(restaurantId, {
+          restaurant: deal.restaurant,
+          city: deal.city,
           cuisines,
-        };
-      })
-    );
+          deals: []
+        });
+      }
 
-    return NextResponse.json(dealsWithCuisines);
+      // Add this deal to the restaurant's deals array
+      const consolidatedDeal = restaurantMap.get(restaurantId)!;
+      consolidatedDeal.deals.push({
+        id: deal.id,
+        dayOfWeek: deal.dayOfWeek,
+        ruleText: deal.ruleText,
+        verified: deal.verified,
+        verifiedAt: deal.verifiedAt?.toISOString() || null,
+      });
+    }
+
+    // Convert map to array
+    const consolidatedDeals = Array.from(restaurantMap.values());
+
+    return NextResponse.json(consolidatedDeals);
   } catch (error) {
     console.error('Error fetching deals:', error);
     return NextResponse.json(

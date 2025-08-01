@@ -5,31 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, MapPin } from 'lucide-react';
-
-interface Deal {
-  id: number;
-  dayOfWeek: string;
-  ruleText: string;
-  verified: boolean;
-  verifiedAt: string | null;
-  restaurant: {
-    id: number;
-    name: string;
-    websiteUrl: string | null;
-    lat: number;
-    lng: number;
-  };
-  city: {
-    id: number;
-    name: string;
-    slug: string;
-  };
-  cuisines: Array<{
-    id: number;
-    name: string;
-    slug: string;
-  }>;
-}
+import { ConsolidatedDeal } from '@/types/deals';
 
 interface DealsListProps {
   city?: string;
@@ -37,7 +13,7 @@ interface DealsListProps {
 }
 
 export default function DealsList({ city, day }: DealsListProps) {
-  const [deals, setDeals] = useState<Deal[]>([]);
+  const [deals, setDeals] = useState<ConsolidatedDeal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -123,7 +99,7 @@ export default function DealsList({ city, day }: DealsListProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">
-          {deals.length} deal{deals.length === 1 ? '' : 's'}
+          {deals.length} restaurant{deals.length === 1 ? '' : 's'}
           {city && day ? ` for ${day} in ${city.charAt(0).toUpperCase() + city.slice(1).replace('-', ' ')}` :
            city ? ` in ${city.charAt(0).toUpperCase() + city.slice(1).replace('-', ' ')}` :
            day ? ` for ${day}` :
@@ -132,88 +108,128 @@ export default function DealsList({ city, day }: DealsListProps) {
       </div>
 
       <div className="space-y-3">
-        {deals.map((deal) => (
-          <Card key={deal.id} className="p-4 hover:shadow-md transition-shadow">
-            <div className="space-y-3">
-              {/* Restaurant name and verified badge */}
-              <div className="flex items-start justify-between">
-                <h3 className="text-lg font-medium text-gray-900 flex-1">
-                  {deal.restaurant.name}
-                </h3>
-                {deal.verified && (
-                  <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">
-                    Verified
-                  </Badge>
-                )}
-              </div>
+        {deals.map((consolidatedDeal) => {
+          // Check if any deal is verified
+          const hasVerifiedDeal = consolidatedDeal.deals.some(deal => deal.verified);
+          
+          return (
+            <Card key={consolidatedDeal.restaurant.id} className="p-4 hover:shadow-md transition-shadow">
+              <div className="space-y-3">
+                {/* Restaurant name and verified badge */}
+                <div className="flex items-start justify-between">
+                  <h3 className="text-lg font-medium text-gray-900 flex-1">
+                    {consolidatedDeal.restaurant.name}
+                  </h3>
+                  {hasVerifiedDeal && (
+                    <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">
+                      Verified
+                    </Badge>
+                  )}
+                </div>
 
-              {/* Cuisines, city, and day badge */}
-              <div className="flex items-center gap-2 flex-wrap">
-                {deal.cuisines.map((cuisine) => (
-                  <span key={cuisine.id} className="text-sm text-gray-600">
-                    {cuisine.name}
-                  </span>
-                ))}
-                {deal.cuisines.length > 0 && <span className="text-gray-400">•</span>}
-                {!city && (
-                  <>
-                    <span className="text-sm text-gray-600">
-                      {deal.city.name}
+                {/* Cuisines, city, and day badges */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {consolidatedDeal.cuisines.map((cuisine) => (
+                    <span key={cuisine.id} className="text-sm text-gray-600">
+                      {cuisine.name}
                     </span>
-                    <span className="text-gray-400">•</span>
-                  </>
-                )}
-                <Badge variant="outline" className="text-xs">
-                  {deal.dayOfWeek}
-                </Badge>
-              </div>
+                  ))}
+                  {consolidatedDeal.cuisines.length > 0 && <span className="text-gray-400">•</span>}
+                  {!city && (
+                    <>
+                      <span className="text-sm text-gray-600">
+                        {consolidatedDeal.city.name}
+                      </span>
+                      <span className="text-gray-400">•</span>
+                    </>
+                  )}
+                  {/* Show day badges for all deals */}
+                  {consolidatedDeal.deals.map((deal) => (
+                    <Badge key={deal.id} variant="outline" className="text-xs">
+                      {deal.dayOfWeek}
+                    </Badge>
+                  ))}
+                </div>
 
-              {/* Deal rule */}
-              {deal.ruleText && (
-                <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
-                  {deal.ruleText}
-                </p>
-              )}
+                {/* Deal rules - show all if they differ, or just one if they're all the same */}
+                <div className="space-y-2">
+                  {(() => {
+                    // Get unique rule texts
+                    const uniqueRules = Array.from(new Set(
+                      consolidatedDeal.deals
+                        .filter(deal => deal.ruleText)
+                        .map(deal => deal.ruleText)
+                    ));
 
-              {/* Actions */}
-              <div className="flex items-center gap-2 pt-2">
-                {deal.restaurant.websiteUrl && (
+                    if (uniqueRules.length === 0) {
+                      return null;
+                    }
+
+                    if (uniqueRules.length === 1) {
+                      // Single rule applies to all days
+                      return (
+                        <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
+                          {uniqueRules[0]}
+                        </p>
+                      );
+                    } else {
+                      // Multiple different rules
+                      return consolidatedDeal.deals
+                        .filter(deal => deal.ruleText)
+                        .map((deal) => (
+                          <div key={deal.id} className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
+                            <div className="font-medium text-gray-900 mb-1">{deal.dayOfWeek}:</div>
+                            {deal.ruleText}
+                          </div>
+                        ));
+                    }
+                  })()}
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 pt-2">
+                  {consolidatedDeal.restaurant.websiteUrl && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      className="flex items-center gap-1"
+                    >
+                      <a
+                        href={consolidatedDeal.restaurant.websiteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        Website
+                      </a>
+                    </Button>
+                  )}
+
                   <Button
                     variant="outline"
                     size="sm"
                     asChild
                     className="flex items-center gap-1"
+                    disabled={!consolidatedDeal.restaurant.lat || !consolidatedDeal.restaurant.lng}
                   >
                     <a
-                      href={deal.restaurant.websiteUrl}
+                      href={consolidatedDeal.restaurant.lat && consolidatedDeal.restaurant.lng 
+                        ? `https://maps.google.com/?q=${consolidatedDeal.restaurant.lat},${consolidatedDeal.restaurant.lng}`
+                        : '#'
+                      }
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <ExternalLink className="w-3 h-3" />
-                      Website
+                      <MapPin className="w-3 h-3" />
+                      Directions
                     </a>
                   </Button>
-                )}
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="flex items-center gap-1"
-                >
-                  <a
-                    href={`https://maps.google.com/?q=${deal.restaurant.lat},${deal.restaurant.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <MapPin className="w-3 h-3" />
-                    Directions
-                  </a>
-                </Button>
+                </div>
               </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
