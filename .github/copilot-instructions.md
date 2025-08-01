@@ -11,10 +11,16 @@
 - ✅ **Test Coverage** - 13/13 tests passing (components + pages)
 - ✅ **TDD Approach** - Implemented following test-driven development
 
+### **COMPLETED (sprint-1 branch)**
+- ✅ **DaySelector Component** - Complete with 7 tests, localStorage persistence, default "Today"
+- ✅ **Filter Controls Layout** - Responsive grid layout on /kidseatfree with City + Day selectors
+- ✅ **Enhanced Test Coverage** - 22/22 tests passing (components + pages + integrations)
+- ✅ **Mobile-First Design** - Both selectors work seamlessly on mobile and desktop
+
 ### **REMAINING WORK**
-- 🔄 **Today's Deals Display** - Show deals for selected city/day
-- 🔄 **Day Selection** - Filter by day of week  
-- 🔄 **Deals List** - Mobile-first list with restaurant info
+- 🔄 **Today's Deals Display** - Show deals for selected city/day combination
+- 🔄 **Deals API Integration** - Connect filters to database queries
+- 🔄 **Deals List Component** - Mobile-first list with restaurant info
 - 🔄 **Restaurant Detail Pages** - Lightweight detail view
 - 🔄 **Tips & Flags** - Anonymous reporting system
 - 🔄 **Distance & Sorting** - Location-based features
@@ -57,7 +63,7 @@ flowchart LR
 ### Planned Deals Flow (Next Sprint)
 ```mermaid
 flowchart LR
-  A[City Selected] --> B[Show Today's Deals List]
+  A[City + Day Selected] --> B[Show Filtered Deals List]
   B --> C{Change filters?}
   C -- City/Day --> B
   C -- Cuisine chip --> B
