@@ -6,6 +6,10 @@ jest.mock('@/components/city-selector', () => ({
   CitySelector: () => <div data-testid="city-selector">City Selector</div>
 }))
 
+jest.mock('@/components/day-selector', () => ({
+  DaySelector: () => <div data-testid="day-selector">Day Selector</div>
+}))
+
 // Mock next/link
 jest.mock('next/link', () => {
   return ({ children, href }: { children: React.ReactNode; href: string }) => {
@@ -33,5 +37,19 @@ describe('Kids Eat Free Page', () => {
     const backLink = screen.getByRole('link', { name: /back to budget triad/i })
     expect(backLink).toBeInTheDocument()
     expect(backLink).toHaveAttribute('href', '/')
+  })
+
+  it('includes the DaySelector component', () => {
+    render(<KidsEatFreePage />)
+
+    expect(screen.getByTestId('day-selector')).toBeInTheDocument()
+  })
+
+  it('displays filter controls in a responsive layout', () => {
+    render(<KidsEatFreePage />)
+
+    // Both selectors should be present for the filter controls
+    expect(screen.getByTestId('city-selector')).toBeInTheDocument()
+    expect(screen.getByTestId('day-selector')).toBeInTheDocument()
   })
 })

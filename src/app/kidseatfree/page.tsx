@@ -1,4 +1,5 @@
 import { CitySelector } from "@/components/city-selector";
+import { DaySelector } from "@/components/day-selector";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -26,7 +27,12 @@ export default function KidsEatFreePage() {
         </header>
 
         <main>
-          <CitySelector />
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CitySelector />
+              <DaySelector />
+            </div>
+          </div>
         </main>
       </div>
     </div>
