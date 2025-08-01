@@ -19,11 +19,11 @@ export function CitySelector() {
       try {
         setLoading(true)
         const response = await fetch('/api/cities')
-        
+
         if (!response.ok) {
           throw new Error('Failed to fetch cities')
         }
-        
+
         const citiesData = await response.json()
         setCities(citiesData)
 
@@ -100,8 +100,8 @@ export function CitySelector() {
                 <span className="font-medium">Selected:</span> {selectedCity.name}
               </p>
             </div>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={clearSelection}
               className="w-full"
             >

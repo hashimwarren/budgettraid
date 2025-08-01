@@ -12,7 +12,7 @@ export default function Home() {
             Find today's kids eat free deals in your city
           </p>
         </header>
-        
+
         <main>
           <CitySelector />
         </main>

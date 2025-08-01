@@ -19,9 +19,9 @@ describe('CitySelector', () => {
 
   it('renders loading state initially', () => {
     ;(fetch as jest.Mock).mockImplementation(() => new Promise(() => {})) // Never resolves
-    
+
     render(<CitySelector />)
-    
+
     expect(screen.getByText('Loading cities...')).toBeInTheDocument()
   })
 
@@ -85,7 +85,7 @@ describe('CitySelector', () => {
 
   it('loads previously selected city from localStorage', async () => {
     localStorage.setItem('selected-city', JSON.stringify(mockCities[0]))
-    
+
     ;(fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => mockCities,
