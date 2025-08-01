@@ -16,20 +16,20 @@ jest.mock('next/link', () => {
 describe('Kids Eat Free Page', () => {
   it('renders the page title and description', () => {
     render(<KidsEatFreePage />)
-    
+
     expect(screen.getByText('Kids Eat Free')).toBeInTheDocument()
     expect(screen.getByText('Find today\'s kids eat free deals in your city')).toBeInTheDocument()
   })
 
   it('includes the CitySelector component', () => {
     render(<KidsEatFreePage />)
-    
+
     expect(screen.getByTestId('city-selector')).toBeInTheDocument()
   })
 
   it('has a back link to Budget Triad home', () => {
     render(<KidsEatFreePage />)
-    
+
     const backLink = screen.getByRole('link', { name: /back to budget triad/i })
     expect(backLink).toBeInTheDocument()
     expect(backLink).toHaveAttribute('href', '/')
